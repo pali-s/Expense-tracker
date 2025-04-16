@@ -32,7 +32,7 @@ exports.getExpenses = async (req, res) => {
 
 exports.getExpenseById = async (req, res) => {
     try {
-        const expense = await Expense.findById(req.params.id);
+        const expense = await Expense.find({user:req.user.id});
         if (!expense) {
             return res.status(404).json({ message: 'Expense not found' });
         }

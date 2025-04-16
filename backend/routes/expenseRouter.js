@@ -6,6 +6,8 @@ const { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense
 const { protect } = require('../middlewares/authMiddleware');
 // Route to create a new expense
 expenseRouter.post('/', protect, createExpense);
+// Route to get expenses by user
+expenseRouter.get('/expenseByID', protect, getExpenseById);
 // Route to get all expenses
 expenseRouter.get('/', protect, getExpenses);
 
