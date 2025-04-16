@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRouter = require('./routes/authRouter');
+const expenseRouter = require('./routes/expenseRouter');
 const database = require('./config/database');
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 database();
 
 app.use('/api/auth', authRouter);
+app.use('/api/expense', expenseRouter);
 
 
 app.listen(port,"0.0.0.0", () => {

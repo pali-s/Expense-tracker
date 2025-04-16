@@ -2,7 +2,16 @@ const Expense = require('../model/expense');
 
 exports.createExpense = async (req, res) => {
     try {
-        const expense = new Expense(req.body);
+        const { title, description, amount, date, category } = req.body;
+        const userId = req.user.id; // Assuming you have user ID from authentication middleware
+        const expense = new Expense({
+            title,
+            description,
+            amount,
+            date,
+            category,
+            user: userId,
+        });
         await expense.save();
         res.status(201).json({ message: 'Expense created successfully' });
         } catch (error) {
