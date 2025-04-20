@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRouter = require('./routes/authRouter');
 const expenseRouter = require('./routes/expenseRouter');
+const budgetRouter =require('./routes/budgetRouter');
 const database = require('./config/database');
 dotenv.config();
 
@@ -16,6 +17,7 @@ database();
 
 app.use('/api/auth', authRouter);
 app.use('/api/expense', expenseRouter);
+app.use('/api/budget', budgetRouter);
 
 
 app.listen(port,"0.0.0.0", () => {
