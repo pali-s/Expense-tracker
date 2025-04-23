@@ -44,3 +44,26 @@ exports.getBudgetById = async (req, res) => {
     }
 };
 
+exports.updateBudgetById = async (req, res) => {
+    const { amount, startDate, duration } = req.body;
+    const userId = req.user.id;
+    // Validate input
+    const validUnits = ['day', 'days', 'week', 'weeks', 'month', 'months', 'year', 'years'];
+    const [value, unit] = duration.split(' ');
+
+    if (isNaN(parseInt(value)) || !validUnits.includes(unit)) {
+        return res.status(400).json({ message: 'Invalid duration format. Use formats like "1 week", "2 months", etc.' });
+    }
+    const updatedBudget = await Budget.findOneAndUpdate(
+        { user: req.user.id },
+        { amount, startDate, duration },
+        { new: true }
+    );
+    if (!updatedBudget) {
+        return res.status(404).json({ message: 'Budget not found' });
+    }
+    res.status(200).json({
+        message: 'Budget updated successfully',
+        budget: updatedBudget,
+    });
+}
