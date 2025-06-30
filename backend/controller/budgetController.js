@@ -33,7 +33,7 @@ exports.createBudget = async (req, res) => {
 
 exports.getBudgetById = async (req, res) => {
     try {
-        const budgets = await Budget.find({user:req.user.id});
+        const budgets = await Budget.find({user:req.user.id,isActive:true});
         if (!budgets) {
             return res.status(404).json({ message: 'Budget not found' });
         }
@@ -47,23 +47,59 @@ exports.getBudgetById = async (req, res) => {
 exports.updateBudgetById = async (req, res) => {
     const { amount, startDate, duration } = req.body;
     const userId = req.user.id;
-    // Validate input
+
+    // ✅ Validate duration format
     const validUnits = ['day', 'days', 'week', 'weeks', 'month', 'months', 'year', 'years'];
     const [value, unit] = duration.split(' ');
 
     if (isNaN(parseInt(value)) || !validUnits.includes(unit)) {
-        return res.status(400).json({ message: 'Invalid duration format. Use formats like "1 week", "2 months", etc.' });
+        return res.status(400).json({
+            message: 'Invalid duration format. Use formats like "1 week", "2 months", etc.'
+        });
     }
-    const updatedBudget = await Budget.findOneAndUpdate(
-        { user: req.user.id },
-        { amount, startDate, duration },
-        { new: true }
-    );
-    if (!updatedBudget) {
-        return res.status(404).json({ message: 'Budget not found' });
+
+    try {
+        // ✅ Step 1: Archive old budget
+        await Budget.updateOne(
+            { user: userId, isActive: true },
+            { isActive: false }
+        );
+
+        // ✅ Step 2: Create new budget (endDate will be auto-calculated in schema)
+        const newBudget = await Budget.create({
+            user: userId,
+            amount,
+            startDate,
+            duration,
+            isActive: true
+        });
+
+        // ✅ Step 3: Send success response
+        return res.status(200).json({
+            message: 'Budget updated successfully',
+            budget: newBudget,
+        });
+    } catch (error) {
+        console.error('Error updating budget:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
-    res.status(200).json({
-        message: 'Budget updated successfully',
-        budget: updatedBudget,
-    });
-}
+};
+
+//to get most recent budget
+exports.getMostRecentBudget = async (req, res) => {
+    try {
+        const budget = await Budget.findOne({
+            user: req.user.id,
+            isActive: false
+        }).sort({ endDate: -1 }); // most recently ended budget
+
+        if (!budget) {
+            return res.status(404).json({ message: 'No expired budgets found' });
+        }
+
+        res.status(200).json(budget);
+    } catch (error) {
+        console.error('Error fetching most recent expired budget:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

@@ -21,6 +21,10 @@ const budgetSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
 }, { timestamps: true });
 
 // Middleware to calculate endDate based on startDate and duration
